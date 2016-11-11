@@ -19,10 +19,15 @@ namespace Lab3
             InitStateArray();
         }
 
+        public double firstProp = 0.3;
+        public double secondProp = 0.5;
+
         private void runButton_Click(object sender, EventArgs e)
         {
             const int tactCount = 1000000;
-            Simulator simulator = new Simulator(0.3, 0.5, StateArray, StateArray[0]);
+            firstProp = (double)firstNumericUpDown.Value;
+            secondProp = (double) secondNumericUpDown.Value;
+            Simulator simulator = new Simulator(firstProp, secondProp, StateArray, StateArray[0]);
             Tester tester = new Tester(simulator, tactCount);
             TestStateResult[] results = tester.RunTest();
             Stats stats = new Stats(StateArray, results);
@@ -97,11 +102,11 @@ namespace Lab3
             if (builder.Length != 0)
                 builder.Append(" + ");
             if (cond.IsFirstAvailable.HasValue)
-                builder.Append(cond.IsFirstAvailable.Value ? "0.7" : "0.3");
+                builder.Append(cond.IsFirstAvailable.Value ? 1 - firstProp : firstProp);
             if (cond.IsSecondAvailable.HasValue)
             {
                 builder.Append(cond.IsFirstAvailable.HasValue ? "*" : "");
-                builder.Append("0.5");
+                builder.Append(cond.IsSecondAvailable.Value ? 1 - secondProp : secondProp);
             }
             builder.Append($"*{currStateValue:0.00000}");
             return builder.ToString();
@@ -111,10 +116,10 @@ namespace Lab3
         {
             double tempValue = 1.0;
             if (cond.IsFirstAvailable.HasValue)
-                tempValue *= cond.IsFirstAvailable.Value ? 0.7 : 0.3;
+                tempValue *= cond.IsFirstAvailable.Value ? 1 - firstProp : firstProp;
             if (cond.IsSecondAvailable.HasValue)
             {
-                tempValue *= 0.5;
+                tempValue *= cond.IsSecondAvailable.Value ? 1 - secondProp : secondProp;
             }
             tempValue *= currStateValue;
             return value + tempValue;
