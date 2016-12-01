@@ -43,12 +43,13 @@
             this.resultTextBox.Location = new System.Drawing.Point(190, 12);
             this.resultTextBox.Multiline = true;
             this.resultTextBox.Name = "resultTextBox";
-            this.resultTextBox.Size = new System.Drawing.Size(387, 340);
+            this.resultTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.resultTextBox.Size = new System.Drawing.Size(387, 492);
             this.resultTextBox.TabIndex = 0;
             // 
             // inputNumericUpDown
             // 
-            this.inputNumericUpDown.DecimalPlaces = 1;
+            this.inputNumericUpDown.DecimalPlaces = 2;
             this.inputNumericUpDown.Increment = new decimal(new int[] {
             1,
             0,
@@ -89,7 +90,7 @@
             // 
             // outputNumericUpDown
             // 
-            this.outputNumericUpDown.DecimalPlaces = 1;
+            this.outputNumericUpDown.DecimalPlaces = 2;
             this.outputNumericUpDown.Increment = new decimal(new int[] {
             1,
             0,
@@ -124,7 +125,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(589, 364);
+            this.ClientSize = new System.Drawing.Size(589, 516);
             this.Controls.Add(this.okButton);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.outputNumericUpDown);
