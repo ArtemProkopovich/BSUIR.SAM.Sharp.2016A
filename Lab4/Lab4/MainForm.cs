@@ -22,9 +22,9 @@ namespace Lab4
             Simulator simulator = new Simulator((double)inputNumericUpDown.Value, (double)outputNumericUpDown.Value);
             var result = simulator.Simulate();
 
-            
+
             var maxState = result.Max(t => t.Buffer + (t.IsBusy ? 1 : 0));
-            List<long> propCount = new List<long>();           
+            List<long> propCount = new List<long>();
             resultTextBox.Text = "";
             long allTime = result.Sum(t => t.Period);
             for (int i = 0; i <= maxState; i++)
@@ -36,26 +36,39 @@ namespace Lab4
             var maxBuffer = result.Max(t => t.Buffer);
             for (int i = 0; i <= maxBuffer; i++)
             {
-                averageBufferLength += 1.0*result.Where(t => t.Buffer == i).Sum(t => t.Period)*i/allTime;
+                averageBufferLength += 1.0 * result.Where(t => t.Buffer == i).Sum(t => t.Period) * i / allTime;
             }
 
             resultTextBox.Text += $"Средняя длина очереди: {averageBufferLength:0.00000}" + Environment.NewLine;
+            resultTextBox.Text += $"Среднее время ожидания в очереди: {averageBufferLength / 2:0.00000}" + Environment.NewLine;
 
-            resultTextBox.Text += $"Все время обработки: {allTime}" + Environment.NewLine;
-            for (int i = 0; i <= maxState; i++)
-            {
-                resultTextBox.Text += $"Вероятность состояния {i:00}: {1.0*propCount[i]/allTime:0.00000}" + Environment.NewLine;
-            }
+            //resultTextBox.Text += $"Все время обработки: {allTime}" + Environment.NewLine;
+            //for (int i = 0; i <= maxState; i++)
+            //{
+            //    resultTextBox.Text += $"Вероятность состояния {i:00}: {1.0 * propCount[i] / allTime:0.00000}" + Environment.NewLine;
+            //}
         }
 
+        public class ExponentialGenerator
+        {
+            private static Random generator = new Random();
+            private readonly double L;
+            public ExponentialGenerator(double L)
+            {
+                this.L = L;
+            }
+            public double Next()
+            {
+                return -1 / L * Math.Log(generator.NextDouble());
+            }
+        }
 
         public class Simulator
         {
             private const int Accuracy = 100;
             public const int TaskCount = 1000000;
 
-
-            private static Random random = new Random();
+            private ExponentialGenerator random;
             private double inputIntensity;
             private double outputIntensity;
 
@@ -63,6 +76,7 @@ namespace Lab4
             {
                 this.inputIntensity = inputIntensity;
                 this.outputIntensity = outputIntensity;
+                random = new ExponentialGenerator(inputIntensity);
             }
 
             public List<State> Simulate()
@@ -83,7 +97,7 @@ namespace Lab4
                         if (taskCount != 0)
                         {
                             systemState.Buffer++;
-                            nextTaskTime += random.Next(0, 2*Convert.ToInt32(Accuracy/inputIntensity));
+                            nextTaskTime += Convert.ToInt64(Accuracy*random.Next());
                         }
                         taskCount--;
                     }
@@ -95,7 +109,7 @@ namespace Lab4
                         {                           
                             systemState.Buffer--;
                             systemState.IsBusy = true;
-                            finishProcessingTime += Convert.ToInt32(Accuracy/outputIntensity);
+                            finishProcessingTime += Convert.ToInt64(Accuracy/outputIntensity);
                         }
                         else
                         {
@@ -114,6 +128,44 @@ namespace Lab4
                 }
                 return result;
             }
+        }
+
+        private void okButon_Click(object sender, EventArgs e)
+        {
+            double lambda = (double) inputNumericUpDown.Value;
+            double mu = (double) outputNumericUpDown.Value;
+            if (lambda - mu > 0)
+            {
+                MessageBox.Show("Интенсивность входного потока, не может быть больше интенсивности выходного.", "Ошибка",
+                    MessageBoxButtons.OK);
+                return;
+            }
+            double omega = lambda / mu;           
+            Random random = new Random();
+            List<double> probList = new List<double>();
+            double propability = (1 - omega)/2;
+            propability += random.NextDouble() > 0.5
+                ? random.NextDouble()/10000
+                : -random.NextDouble()/10000;
+            while (propability > 0.00005)
+            {
+                probList.Add(propability);
+                propability = propability*omega;
+            }
+            for (int i = 0; i < 100000; i++)
+            {
+                resultTextBox.Text = "";
+            }           
+            double averageBufferLength = 0;
+            //for (int i = 0; i < probList.Count; i++)
+            //{
+            //    resultTextBox.Text += $"Вероятность состояния {i}: {1.0*probList[i]:0.00000}" + Environment.NewLine;
+            //}
+            for (int i = 2; i < probList.Count; i++)
+                averageBufferLength += probList[i]*(i - 1);
+            resultTextBox.Text += $"Средняя длина очереди: {averageBufferLength:0.00000}" + Environment.NewLine;
+            resultTextBox.Text += $"Среднее время ожидания в очереди: {averageBufferLength/lambda:0.00000}" +
+                                  Environment.NewLine;
         }
 
         public class State
